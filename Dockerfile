@@ -12,4 +12,4 @@ COPY . /opt/app
 
 CMD ["python", "./app.py"]
 
-EXPOSE 8080/tcp
+EXPOSE 8050/tcp

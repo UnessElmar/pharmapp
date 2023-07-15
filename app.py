@@ -147,4 +147,4 @@ def modal_demo(nc1, nc2, nc3, opened):
 
 # Run the server
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', debug=True, port=8050)

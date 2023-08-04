@@ -369,7 +369,7 @@ def ajout_prod_achat(n1, n2, cb_prod, nom_prod, qte_prod):
                      ).to_csv('./data/tmp_achats.csv', header=True, index=False)
     data = pd.read_csv('./data/tmp_achats.csv')
     if 'modal-submit-button' in dash.callback_context.triggered[0]['prop_id']:
-        prod_df = pd.read_excel('./data/refs_medicaments.xlsx')
+        prod_df = pd.read_csv('./data/refs_medicaments.csv')
         prod_df["CODE"] = prod_df["CODE"].values.astype('str')
         prod_row = prod_df.loc[prod_df.CODE==cb_prod]
         if prod_row.shape[0]!=1 and prod_row.shape[0]!=0:
@@ -408,7 +408,7 @@ def ajout_prod_achat(n1, n2, cb_prod, nom_prod, qte_prod):
    ]
 )
 def update_product_values(cb_prod, nom_prod, n1, n2):
-    prod_df = pd.read_excel('./data/refs_medicaments.xlsx')
+    prod_df = pd.read_csv('./data/refs_medicaments.csv')
     prod_df["CODE"] = prod_df["CODE"].values.astype('str')
     if 'modal-submit-button' in dash.callback_context.triggered[0]['prop_id'] or 'modal-close-button' in dash.callback_context.triggered[0]['prop_id']:
         return ['', '', 1]

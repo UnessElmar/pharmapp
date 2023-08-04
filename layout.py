@@ -14,7 +14,7 @@ import datetime
 from datetime import datetime as dt
 import pathlib
 
-noms_medocs = pd.read_csv('./data/refs_medicaments.csv', usecols = ['NOM'])[:50].values.reshape(-1)
+noms_medocs = pd.read_csv('./data/refs_medicaments.csv', sep=',', usecols = ['NOM'])[:50].values.reshape(-1)
 
 vente_layout = html.Div(
     children=[

@@ -14,7 +14,7 @@ import datetime
 from datetime import datetime as dt
 import pathlib
 
-
+noms_medocs = pd.read_excel('./data/refs_medicaments.xlsx', usecols = ['NOM'])[:50].values.reshape(-1)
 
 vente_layout = html.Div(
     children=[
@@ -52,7 +52,7 @@ vente_layout = html.Div(
         ),
         dmc.Button('Scan produit', id="modal-demo-button", style={"display":'block', 'margin-left':'auto', 'margin-right':'auto'}),
         html.Br(),
-        dmc.Divider(label="OU", labelPosition="center"),
+        dmc.Divider(label="Vue d'ensemble", labelPosition="center"),
         html.Br(),
         dmc.Modal(
             title="Détails du produit",
@@ -61,18 +61,19 @@ vente_layout = html.Div(
             children=[
                 dmc.Group(
                     [
-                        dmc.TextInput(label="ID produit:", placeholder='BKJBOIZOJIC'),
-                        dmc.NumberInput(label='Quantité:', value=1, min=1, step=1),
-                        dmc.Select(
-                            label="Remise",
-                            placeholder="Choix de remise",
-                            value="aucune",
-                            data=[
-                                {"value": "aucune", "label": "Aucune"},
-                                {"value": "10%", "label": "10%"},
-                                {"value": "15%", "label": "15%"},
-                            ],
-                        ),                        
+                        dmc.TextInput(label="Code produit:", id='cb_prod_achat', placeholder='Scan code barre'),
+                        dmc.Select(label="Nom produit:", id='nom_prod_achat', data=noms_medocs, searchable=True, clearable=True, nothingFound="Aucun produit trouvé", placeholder='Tapez le nom du produit'),
+                        dmc.NumberInput(label='Quantité:', id='qte_prod_achat', value=1, min=1, step=1),
+                        # dmc.Select(
+                        #     label="Remise",
+                        #     placeholder="Choix de remise",
+                        #     value="aucune",
+                        #     data=[
+                        #         {"value": "aucune", "label": "Aucune"},
+                        #         {"value": "10%", "label": "10%"},
+                        #         {"value": "15%", "label": "15%"},
+                        #     ],
+                        # ),                        
                     ],
                     position="left",
                 ),
@@ -90,115 +91,104 @@ vente_layout = html.Div(
                 ),
             ],
         ),
-        html.Div(
-            className='courses-container',
+        dmc.Grid(
             children=[
-                html.Div(
-                    className='course',
+                dmc.Col(
                     children=[
                         html.Div(
-                            className='course-preview',
-                            children=[
-                                html.H6('Sans ordonnance'),
-                                html.H2('Doliprane 500g'),
-                                html.A(
-                                    href="#",
-                                    children=[
-                                        'Fiche produit',
-                                        html.I(className='fas fa-chevron-right')
-                                    ]
-                                ),
-                            ]
+                            id='articles_pour_achat',
+                            
                         ),
-                        html.Div(
-                            className='course-info',
-                            children=[
-                                html.Div(
-                                    className='progress-container',
-                                    children=[
-                                        html.Div(className='progress20'),
-                                        html.Span(
-                                            '20/100 en stock',
-                                            className='progress-text',
-                                        )
-                                    ]
-                                ),
-                                html.H6('Quantité: 5'),
-                                html.H6('Prix unitaire: 20 Dh'),
-                                html.H2('Prix total: 100 DH'),
-                                html.Div(
-                                    className='row align-items-right',
-                                    children=[
-                                        html.Button(
-                                            'Modifier',
-                                            className='btn-bis'
-                                        ),
-                                        html.Button(
-                                            'Supprimer',
-                                            className='btn'
-                                        ),
-                                    ]
-                                )   
-                            ]
-                        ),
-                    ]
-                ),
-                html.Div(
-                    className='course',
+                        
+                    ],
+                span=6),
+                dmc.Col(
                     children=[
                         html.Div(
-                            className='course-preview',
-                            children=[
-                                html.H6('Sans ordonnance'),
-                                html.H2('Febrex'),
-                                html.A(
-                                    href="#",
-                                    children=[
-                                        'Fiche produit',
-                                        html.I(className='fas fa-chevron-right')
-                                    ]
-                                ),
-                            ]
+                            id='facture_pour_achat',
                         ),
                         html.Div(
-                            className='course-info',
+                            id='facture_pour_achat_modal',
+                        ),
+
+                        dmc.Modal(
+                            title="Modalité de paiement",
+                            id="modal-simple-bis",
+                            centered=True,
+                            zIndex=10000,
                             children=[
-                                html.Div(
-                                    className='progress-container',
+                                dmc.Text("Mode de paiement", weight=500),
+                                dmc.SegmentedControl(
+                                    orientation="horizontal",
+                                    fullWidth=True,
+                                    color='blue',
+                                    data=["CB", "Cash", "Crédit"]
+                                ),
+                                dmc.Space(h=20),
+                                dmc.Grid(
                                     children=[
-                                        html.Div(className='progress10'),
-                                        html.Span(
-                                            '10/100 en stock',
-                                            className='progress-text',
-                                        )
+                                        dmc.Col(dmc.Select(
+                                            label='Client',
+                                            data=["Momo", "Abdel", "Joe"],
+                                            clearable=True,
+                                            style={"width": '90%'},
+                                        ), span=9),
+                                        dmc.Col(dmc.Select(
+                                            label='Remise',
+                                            data=["10%", "20%", "30%"],
+                                            clearable=True,
+                                            style={"width": '90%'},
+                                        ), span=3),
                                     ]
                                 ),
-                                html.H6('Quantité: 4'),
-                                html.H6('Prix unitaire: 20 Dh'),
-                                html.H2('Prix total: 80 DH'),
-                                html.Div(
-                                    className='row align-items-right',
+                                dmc.Space(h=20),
+                                dmc.Divider(variant="dashed"),
+                                dmc.Text(id='total_paiement_affich', size="lg", weight=700, align="right"),
+                                dmc.Text(id='total_paiement_affich_remise', size="xl", weight=700, align="right"),
+                                dmc.Space(h=20),
+                                dmc.Grid(
                                     children=[
-                                        html.Button(
-                                            'Modifier',
-                                            className='btn-bis'
+                                        dmc.Col(
+                                            children=[
+                                                dmc.Button(
+                                                    "Imprimer la facture",
+                                                    leftIcon=DashIconify(icon="basil:invoice-outline"),
+                                                    color='green',
+                                                ),
+                                            ],
+                                            span=9
                                         ),
-                                        html.Button(
-                                            'Supprimer',
-                                            className='btn'
+                                        dmc.Col(
+                                            children=[
+                                                dmc.Group(
+                                                    [
+                                                        dmc.Button("Valider", id="valider_paiement"),
+                                                        dmc.Button(
+                                                            "Annuler",
+                                                            color="red",
+                                                            variant="outline",
+                                                            id="annuler_paiement",
+                                                        ),
+                                                    ],
+                                                    position="right",
+                                                ),
+                                            ],
+                                            span=3
                                         ),
                                     ]
-                                )   
-                            ]
+                                ),
+                                
+                            ],
+                            size='50%'
                         ),
-                    ]
-                ),
-                html.Button(
-                    "Valider la commande",
-                    className='button-valid',
-                )
-            ]
-        )
+                            
+                    ],
+                span=6),
+            ],
+            gutter="xl",
+        ),
+        html.Div(id="notifications-container"),
+        dmc.Button("Show Notification", id="notify"),
     ]
 )
 
@@ -493,7 +483,7 @@ create_product = html.Div(
                                     ],
                                 style={'width': '100%', 'display': 'flex'}),
                             html.Br(),
-                            html.Button('Ajouter', id='product_ajouter', className='button-valid'),
+                            dmc.Button("Ajouter", id='ajouter_produit'),
                             html.Br(),
                             html.Br(),
                             ]
@@ -524,32 +514,32 @@ create_product = html.Div(
                             ],
                             style={'width': '100%', 'display': 'flex'}
                         ),
+                        html.Br(),
                         html.Div(
-                            className='inner-wrap',
+                            # className='inner-wrap',
                             children=[
                                 html.Div(
-                                    className='table-container',
-                                    children=[
-                                        html.Div(
-                                            dash_table.DataTable(
-                                                id='product_table',
-                                                columns=[
-                                                    {'name': 'Nom du produit', 'id': 'tab_produit'},
-                                                    {'name': 'Code barre', 'id': 'tab_code_barre'},
-                                                    {'name': 'Molécule', 'id': 'tab_molecule'},
-                                                    {'name': 'Famille de produit', 'id': 'tab_famille'},
-                                                    {'name': 'Ordonance', 'id': 'tab_ordonance'},
-                                                ],
-                                                data=[
-                                                    {'tab_produit':'Doliprane', 'tab_code_barre':'f1', 'tab_molecule':5, 'tab_famille':1, 'tab_ordonance':1} for i in range(100)
-                                                ],
-                                                editable=True,
-                                                row_deletable=True,
-                                                page_size=20
-                                            ),
+                                    id='product_table_div',
+                                    # className='table-container',
+                                    # children=[
+                                    #     html.Div(
+                                    #         dash_table.DataTable(
+                                    #             id='product_table',
+                                    #             columns=[
+                                    #                 {'name': 'Nom du produit', 'id': 'tab_produit'},
+                                    #                 {'name': 'Code barre', 'id': 'tab_code_barre'},
+                                    #                 {'name': 'Molécule', 'id': 'tab_molecule'},
+                                    #                 {'name': 'Famille de produit', 'id': 'tab_famille'},
+                                    #                 {'name': 'Ordonance', 'id': 'tab_ordonance'},
+                                    #             ],
+                                    #             data=[],
+                                    #             editable=True,
+                                    #             row_deletable=True,
+                                    #             page_size=15
+                                    #         ),
                                             
-                                        )
-                                    ],
+                                    #     )
+                                    # ],
                                 ),
                                 html.Br(),
                             ]
@@ -634,7 +624,7 @@ create_fournisseur = html.Div(
                                 #     ],
                                 # style={'width': '100%', 'display': 'flex'}),
                             html.Br(),
-                            html.Button('Ajouter', id='fourn_ajouter', className='button-valid'),
+                            dmc.Button("Ajouter", id='fourn_ajouter'),
                             html.Br(),
                             html.Br(),
                             ]
@@ -652,7 +642,7 @@ create_fournisseur = html.Div(
                             children=[
                                 html.Div(
                                     children=[
-                                        html.H6('Nom du produit'),
+                                        html.H6('Raison sociale'),
                                         dcc.Input(id='fourn_nom_filter', type='text'),
                                     ],
                                 style={'width': '70%'}),
@@ -665,29 +655,13 @@ create_fournisseur = html.Div(
                             ],
                             style={'width': '100%', 'display': 'flex'}
                         ),
+                        html.Br(),
                         html.Div(
-                            className='inner-wrap',
+                            # className='inner-wrap',
                             children=[
                                 html.Div(
-                                    className='table-container',
-                                    children=[
-                                        html.Div(
-                                            dash_table.DataTable(
-                                                id='fourn_table',
-                                                columns=[
-                                                    {'name': 'Raison sociale', 'id': 'tab_fourn'},
-                                                    {'name': 'Code SIRET', 'id': 'tab_code_siret'},
-                                                ],
-                                                data=[
-                                                    {'tab_fourn':'Doliprane', 'tab_code_siret':'f1'} for i in range(30)
-                                                ],
-                                                editable=True,
-                                                row_deletable=True,
-                                                page_size=20
-                                            ),
-                                            
-                                        )
-                                    ],
+                                    # className='table-container',
+                                    id='fourn_table_div'
                                 ),
                                 html.Br(),
                             ]

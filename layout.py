@@ -14,7 +14,7 @@ import datetime
 from datetime import datetime as dt
 import pathlib
 
-noms_medocs = pd.read_csv('./data/refs_medicaments.csv', sep=',', usecols = ['NOM'])[:50].values.reshape(-1)
+noms_medocs = pd.read_csv('./data/refs_medicaments.csv', usecols = ['NOM'])[:50].values.reshape(-1)
 
 vente_layout = html.Div(
     children=[
@@ -62,7 +62,12 @@ vente_layout = html.Div(
                 dmc.Group(
                     [
                         dmc.TextInput(label="Code produit:", id='cb_prod_achat', placeholder='Scan code barre'),
-                        dmc.Select(label="Nom produit:", id='nom_prod_achat', data=noms_medocs, searchable=True, clearable=True, nothingFound="Aucun produit trouvé", placeholder='Tapez le nom du produit'),
+                        dmc.LoadingOverlay(dmc.Select(label="Nom produit:", id='nom_prod_achat', searchable=True, clearable=True, nothingFound="Aucun produit trouvé", placeholder='Tapez le nom du produit')),
+                        # dmc.LoadingOverlay(
+                        #     dcc.Dropdown(
+                        #         id="nom_prod_achat",
+                        #     ),
+                        # ),
                         dmc.NumberInput(label='Quantité:', id='qte_prod_achat', value=1, min=1, step=1),
                         # dmc.Select(
                         #     label="Remise",
@@ -97,9 +102,10 @@ vente_layout = html.Div(
                     children=[
                         html.Div(
                             id='articles_pour_achat',
-                            
                         ),
-                        
+                        html.Div(
+                            id='articles_pour_achat_dumb',
+                        ),
                     ],
                 span=6),
                 dmc.Col(
@@ -119,15 +125,18 @@ vente_layout = html.Div(
                             children=[
                                 dmc.Text("Mode de paiement", weight=500),
                                 dmc.SegmentedControl(
+                                    id='moyen_paiement',
                                     orientation="horizontal",
                                     fullWidth=True,
                                     color='blue',
+                                    value="Cash",
                                     data=["CB", "Cash", "Crédit"]
                                 ),
                                 dmc.Space(h=20),
                                 dmc.Grid(
                                     children=[
                                         dmc.Col(dmc.Select(
+                                            id='client_paiement',
                                             label='Client',
                                             data=["Momo", "Abdel", "Joe"],
                                             clearable=True,
@@ -187,8 +196,8 @@ vente_layout = html.Div(
             ],
             gutter="xl",
         ),
-        html.Div(id="notifications-container"),
-        dmc.Button("Show Notification", id="notify"),
+        dmc.NotificationsProvider(html.Div(id="notifications-container")),
+        # dmc.Button("Show Notification", id="notify"),
     ]
 )
 
@@ -674,13 +683,105 @@ create_fournisseur = html.Div(
 )
 
 
-achat_layout = html.Div(
+create_client = html.Div(
+    #className='courses-container',
+    children=[
+        html.Div(
+            className='form-style-10',
+            children=[
+                html.H1(
+                    children=[
+                        'Formulaire de création d\'un nouveau profil client',
+                        html.Span('Veuillez renseigner les informations ci-dessous'),
+                    ]
+                ),
+                html.Form(
+                    [
+                        html.Div(
+                            className='section',
+                            children=[
+                                html.Span('1'),
+                                'Informations client',
+                            ]
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            children=[
+                                                html.H6('Nom'),
+                                                dcc.Input(id='client_nom', type='text'),
+                                            ],
+                                        style={'width': '70%'}),
+                                        html.Div(
+                                            children=[
+                                                html.H6('Remise'),
+                                                dmc.Select(id='client_remise', data=['10%', '20%', '30%'], clearable=True),
+                                            ],
+                                        style={'width': '30%'}),
+                                    ],
+                                    style={'width': '100%', 'display': 'flex'}
+                                ),
+                            html.Br(),
+                            dmc.Button("Ajouter", id='client_ajouter'),
+                            html.Br(),
+                            html.Br(),
+                            ]
+                        ),
+                        html.Div(
+                            className='section',
+                            children=[
+                                html.Span('2'),
+                                'Liste des clients',
+                            ]
+                        ),
+                        html.Br(),
+                        html.H5('Filtrer par:'),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    children=[
+                                        html.H6('Nom'),
+                                        dcc.Input(id='client_nom_filter', type='text'),
+                                    ],
+                                style={'width': '70%'}),
+                                html.Div(
+                                    children=[
+                                        html.H6('Type remise'),
+                                        dmc.Select(id='client_remise_filter', data=['10%', '20%', '30%'], clearable=True),
+                                    ],
+                                style={'width': '30%'}),
+                            ],
+                            style={'width': '100%', 'display': 'flex'}
+                        ),
+                        html.Br(),
+                        html.Div(
+                            # className='inner-wrap',
+                            children=[
+                                html.Div(
+                                    # className='table-container',
+                                    id='client_table_div'
+                                ),
+                                html.Br(),
+                            ]
+                        ),
+                    ]
+                )
+            ]
+        )
+    ]
+)
+
+
+creation_layout = html.Div(
     [
         dcc.Tabs(id="achat-tabs", value='tab-1-creation-BC', children=[
-            dcc.Tab(label='Création du bon de commande', value='tab-1-creation-BC', children=create_bc),
+            dcc.Tab(label='Nouveau bon de commande', value='tab-1-creation-BC', children=create_bc),
             dcc.Tab(label='Suivi de commande', value='tab-1-suivi-BC', children=suivi_bc),
-            dcc.Tab(label='Gestion des produits', value='tab-2-gestion-produit', children=create_product),
-            dcc.Tab(label='Gestion des fournisseurs', value='tab-3-gestion-founisseur', children=create_fournisseur),
+            dcc.Tab(label='Nouveau produit', value='tab-2-gestion-produit', children=create_product),
+            dcc.Tab(label='Nouveau fournisseur', value='tab-3-gestion-founisseur', children=create_fournisseur),
+            dcc.Tab(label='Nouveau client', value='tab-4-gestion-client', children=create_client),
         ]),
     ],
     #className='container'
@@ -729,10 +830,78 @@ df1 = pd.DataFrame(
 hist_ventes = html.Div(
     className='form-style-10',
     children=[
-        html.Div(
-            dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, style={'width':'100%'}),
+        html.H1(
+            children=[
+                'Historique des ventes',
+            ]
+        ),
+        html.Form(
+            [
+                html.H5('Filtrer par:'),
+                html.Div(
+                    children=[
+                        html.Div(
+                            children=[
+                                html.H6('Client'),
+                                dmc.Select(id='client_transaction_filter', data=['TOUS'] + pd.read_csv('./data/clients_df.csv').client.tolist(), value='TOUS'),
+                            ],
+                        style={'width': '20%'}),
+                        html.Div(
+                            children=[
+                                html.H6('Paiement'),
+                                dmc.Select(id='moy_paiement_transaction_filter', data=['TOUS', 'CB', 'Cash', 'Crédit'], value='TOUS'),
+                            ],
+                        style={'width': '20%'}),
+                        html.Div(
+                            children=[
+                                html.H6('Date'),
+                                dmc.DatePicker(
+                                    id="date_start_transaction_filter",
+                                    locale="fr",
+                                    style={"width": 200},
+                                    clearable=True
+                                ),
+                                dmc.Text('Jusqu\'à'),
+                                dmc.DatePicker(
+                                    id="date_end_transaction_filter",
+                                    locale="fr",
+                                    style={"width": 200},
+                                    clearable=True
+                                ),
+                                # dmc.Select(id='date_transaction_filter', data=['10%', '20%', '30%'], clearable=True),
+                            ],
+                        style={'width': '30%'}),
+                        html.Div(
+                            children=[
+                                html.H6('Heure'),
+                                dmc.TimeInput(id='heure_start_transaction_filter', clearable=True),
+                                dmc.Text('Jusqu\'à'),
+                                dmc.TimeInput(id='heure_end_transaction_filter', clearable=True),
+                            ],
+                        # style={'width': '30%'}
+                        ),
+                    ],
+                    style={'width': '100%', 'display': 'flex'}
+                ),
+                html.Br(),
+                html.Div(
+                    # className='inner-wrap',
+                    children=[
+                        html.Div(
+                            # className='table-container',
+                            id='histo_vente_table_div'
+                        ),
+                        html.Br(),
+                    ]
+                ),
+            ]
         )
-    ] 
+    ]
+    # children=[
+    #     html.Div(
+    #         dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, style={'width':'100%'}),
+    #     )
+    # ] 
 )
 
 hist_achats = html.Div(
@@ -854,8 +1023,8 @@ start_layout = html.Div(
                         className='button-slot',
                     ),
                     html.Button(
-                        [html.Span('Achat'),],
-                        id='achat_bttn',
+                        [html.Span('Création'),],
+                        id='creation_bttn',
                         className='button-slot',
                     ),
                     html.Button(
@@ -900,7 +1069,7 @@ start_layout = html.Div(
                     id="corps_contenu",
                     children=[
                         html.Div(id='vente_container', children=vente_layout, style={'display': 'none'}),
-                        html.Div(id='achat_container', children=achat_layout, style={'display': 'none'}),
+                        html.Div(id='creation_container', children=creation_layout, style={'display': 'none'}),
                         html.Div(id='historique_container', children=hitorique_layout, style={'display': 'none'}),
                         html.Div(id='inventaire_container', children=inventaire_layout, style={'display': 'none'}),
                         html.Div(id='statistics_container', children=statistics_layout, style={'display': 'none'}),
